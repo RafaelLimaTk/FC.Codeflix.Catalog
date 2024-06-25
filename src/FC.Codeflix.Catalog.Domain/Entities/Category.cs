@@ -24,7 +24,7 @@ public class Category
     {
         if (string.IsNullOrWhiteSpace(Name))
             throw new EntityValidationException($"{nameof(Name)} should not be empty or null");
-        
+
         if (Name.Length < 3)
             throw new EntityValidationException($"{nameof(Name)} should be at leats 3 caracters long");
 
