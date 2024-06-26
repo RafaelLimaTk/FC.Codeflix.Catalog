@@ -1,7 +1,7 @@
 ﻿using FC.Codeflix.Catalog.Application.UseCases.Category.Common;
+using MediatR;
 
 namespace FC.Codeflix.Catalog.Application.UseCases.Category.CreateCategory;
-public interface ICreateCategory
-{
-    Task<CategoryModelResponse> Handle(CreateCategoryRequest request, CancellationToken cancellationToken);
-}
+public interface ICreateCategory :
+    IRequestHandler<CreateCategoryRequest, CategoryModelResponse>
+{ }
