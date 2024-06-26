@@ -150,4 +150,123 @@ public class CategoryTest
 
         Assert.False(category.IsActive);
     }
+
+    [Fact(DisplayName = nameof(UpdateCategory))]
+    [Trait("Domain", "Category - Aggregates")]
+    public void UpdateCategory()
+    {
+        var validData = new
+        {
+            Name = "Category Name",
+            Description = "Category description"
+        };
+
+        var category = new DomainEntity.Category(validData.Name, validData.Description);
+        var newName = "New Category Name";
+        var newDescription = "New Category description";
+
+        category.Update(newName, newDescription);
+
+        Assert.Equal(newName, category.Name);
+        Assert.Equal(newDescription, category.Description);
+    }
+
+    [Fact(DisplayName = nameof(UpdateOnlyNameCategory))]
+    [Trait("Domain", "Category - Aggregates")]
+    public void UpdateOnlyNameCategory()
+    {
+        var validData = new
+        {
+            Name = "Category Name",
+            Description = "Category description"
+        };
+
+        var category = new DomainEntity.Category(validData.Name, validData.Description);
+        var newName = "New Category Name";
+
+        category.Update(newName);
+
+        Assert.Equal(newName, category.Name);
+        Assert.Equal(validData.Description, category.Description);
+    }
+
+    [Fact(DisplayName = nameof(UpdateErroNameIsEmptyCategory))]
+    [Trait("Domain", "Category - Aggregates")]
+    public void UpdateErroNameIsEmptyCategory()
+    {
+        var validData = new
+        {
+            Name = "Category Name",
+            Description = "Category description"
+        };
+
+        var category = new DomainEntity.Category(validData.Name, validData.Description);
+
+        Action action =
+            () => category.Update("");
+
+        var exception = Assert.Throws<EntityValidationException>(action);
+        Assert.Equal("Name should not be empty or null", exception.Message);
+    }
+
+    [Theory(DisplayName = nameof(UpdateErroNameThan3CaractersCategory))]
+    [Trait("Domain", "Category - Aggregates")]
+    [InlineData("Ca")]
+    [InlineData("C")]
+    public void UpdateErroNameThan3CaractersCategory(string name)
+    {
+        var validData = new
+        {
+            Name = "Category Name",
+            Description = "Category description"
+        };
+
+        var category = new DomainEntity.Category(validData.Name, validData.Description);
+
+        Action action =
+            () => category.Update(name);
+
+        var exception = Assert.Throws<EntityValidationException>(action);
+        Assert.Equal("Name should be at leats 3 caracters long", exception.Message);
+    }
+
+    [Fact(DisplayName = nameof(UpdateErroNameThan255CaractersCategory))]
+    [Trait("Domain", "Category - Aggregates")]
+    public void UpdateErroNameThan255CaractersCategory()
+    {
+        var validData = new
+        {
+            Name = "Category Name",
+            Description = "Category description"
+        };
+
+        var category = new DomainEntity.Category(validData.Name, validData.Description);
+        var name = new string('a', 256);
+
+        Action action =
+            () => category.Update(name);
+
+        var exception = Assert.Throws<EntityValidationException>(action);
+        Assert.Equal("Name should be less or equal 255 caracters long", exception.Message);
+    }
+
+    [Fact(DisplayName = nameof(UpdateErroDescriptionThan10_000CaractersCategory))]
+    [Trait("Domain", "Category - Aggregates")]
+    public void UpdateErroDescriptionThan10_000CaractersCategory()
+    {
+        var validData = new
+        {
+            Name = "Category Name",
+            Description = "Category description"
+        };
+
+        var category = new DomainEntity.Category(validData.Name, validData.Description);
+        var description = new string('a', 10_001);
+
+        Action action =
+            () => category.Update("Category Name", description);
+
+        var exception = Assert.Throws<EntityValidationException>(action);
+        Assert.Equal("Description should be less or equal 10.000 caracters long", exception.Message);
+    }
 }
