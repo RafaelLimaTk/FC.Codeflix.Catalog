@@ -125,7 +125,7 @@ public class CategoryTest
 
         action.Should()
             .Throw<EntityValidationException>()
-            .WithMessage("Description should be less or equal 10.000 caracters long");
+            .WithMessage("Description should be less or equal 10000 caracters long");
     }
 
     [Fact(DisplayName = nameof(ActivateCategory))]
@@ -228,6 +228,6 @@ public class CategoryTest
 
         action.Should()
             .Throw<EntityValidationException>()
-            .WithMessage("Description should be less or equal 10.000 caracters long");
+            .WithMessage("Description should be less or equal 10000 caracters long");
     }
 }
