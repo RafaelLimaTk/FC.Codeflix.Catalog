@@ -27,19 +27,19 @@ public class UpdateCategoryTestDataGenerator
                 case 0:
                     invalidInputsList.Add(new object[] {
                         fixture.GetInvalidInputShortName(),
-                        "Name should be at least 3 characters long"
+                        "Name should be at leats 3 caracters long"
                     });
                     break;
                 case 1:
                     invalidInputsList.Add(new object[] {
                         fixture.GetInvalidInputTooLongName(),
-                        "Name should be less or equal 255 characters long"
+                        "Name should be less or equal 255 caracters long"
                     });
                     break;
                 case 2:
                     invalidInputsList.Add(new object[] {
                         fixture.GetInvalidInputTooLongDescription(),
-                        "Description should be less or equal 10000 characters long"
+                        "Description should be less or equal 10000 caracters long"
                     });
                     break;
                 default:

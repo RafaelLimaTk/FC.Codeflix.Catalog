@@ -1,5 +1,6 @@
 ﻿using FC.Codeflix.Catalog.Application.UseCases.Category.GetCategory;
 using FluentAssertions;
+using FluentValidation;
 
 namespace FC.Codeflix.Catalog.UnitTests.Application.Category.GetCategory;
 
@@ -29,6 +30,7 @@ public class GetCategoryInputValidatorTest
     [Trait("Application", "GetCategoryInputValidation - UseCases")]
     public void InvalidWhenEmptyGuidId()
     {
+        ValidatorOptions.Global.LanguageManager.Enabled = false;
         var invalidRequest = new GetCategoryRequest(Guid.Empty);
         var validator = new GetCategoryRequestValidator();
 
@@ -38,6 +40,6 @@ public class GetCategoryInputValidatorTest
         validationResult.IsValid.Should().BeFalse();
         validationResult.Errors.Should().HaveCount(1);
         validationResult.Errors[0].ErrorMessage
-            .Should().Be("'Id' deve ser informado.");
+            .Should().Be("'Id' must not be empty.");
     }
 }
