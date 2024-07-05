@@ -145,7 +145,7 @@ public class UpdateCategoryTest
         await dbContext.AddRangeAsync(_fixture.GetExampleCategoriesList());
         dbContext.SaveChanges();
         var repository = new CategoryRepository(dbContext);
-        var unitOfWork = new UnitOfWork(dbContext;
+        var unitOfWork = new UnitOfWork(dbContext);
         var useCase = new ApplicationUseCase.UpdateCategory(repository, unitOfWork);
 
         var task = async ()
