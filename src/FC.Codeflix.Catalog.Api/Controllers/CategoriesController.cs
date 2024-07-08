@@ -2,7 +2,9 @@
 using FC.Codeflix.Catalog.Application.UseCases.Category.CreateCategory;
 using FC.Codeflix.Catalog.Application.UseCases.Category.DeleteCategory;
 using FC.Codeflix.Catalog.Application.UseCases.Category.GetCategory;
+using FC.Codeflix.Catalog.Application.UseCases.Category.ListCategories;
 using FC.Codeflix.Catalog.Application.UseCases.Category.UpdateCategory;
+using FC.Codeflix.Catalog.Domain.SeedWorks.SearchableRepository;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -68,6 +70,28 @@ public class CategoriesController : ControllerBase
     {
         updateCategoryRequest.Id = id;
         var response = await _mediator.Send(updateCategoryRequest, cancellationToken);
+        return Ok(response);
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(ListCategoriesResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> List(
+        CancellationToken cancellationToken,
+        [FromQuery] int? page = null,
+        [FromQuery] int? perPage = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? sort = null,
+        [FromQuery] SearchOrder? dir = null
+    )
+    {
+        var input = new ListCategoriesRequest();
+        if (page.HasValue) input.Page = page.Value;
+        if (perPage.HasValue) input.PerPage = perPage.Value;
+        if (!string.IsNullOrWhiteSpace(search)) input.Search = search;
+        if (!string.IsNullOrWhiteSpace(sort)) input.Sort = sort;
+        if (dir.HasValue) input.Dir = dir.Value;
+
+        var response = await _mediator.Send(input, cancellationToken);
         return Ok(response);
     }
 }
