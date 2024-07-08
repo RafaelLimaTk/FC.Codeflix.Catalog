@@ -6,6 +6,7 @@ public static class ApiConfig
 {
     public static void AddConfigureApi(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddConnections(configuration);
         services.AddControllers();
         services.AddHttpContextAccessor();
         services.AddSwaggerConfiguration();
