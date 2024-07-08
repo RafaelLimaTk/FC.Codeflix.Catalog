@@ -36,4 +36,22 @@ public class ApiClient
             );
         return (response, output);
     }
+
+    public async Task<(HttpResponseMessage?, TOutput?)> Get<TOutput>(
+        string route
+    ) where TOutput : class
+    {
+        var response = await _httpClient.GetAsync(route);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        TOutput? output = null;
+        if (string.IsNullOrWhiteSpace(responseContent) == false)
+            output = JsonSerializer.Deserialize<TOutput>(
+                responseContent,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }
+            );
+        return (response, output);
+    }
 }

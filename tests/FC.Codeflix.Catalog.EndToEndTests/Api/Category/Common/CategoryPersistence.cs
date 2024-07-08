@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using DomainEntity = FC.Codeflix.Catalog.Domain.Entities;
 
-namespace FC.Codeflix.Catalog.EndToEndTests.Api.Common;
+namespace FC.Codeflix.Catalog.EndToEndTests.Api.Category.Common;
 public class CategoryPersistence
 {
     private readonly CodeflixCatalogDbContext _context;
