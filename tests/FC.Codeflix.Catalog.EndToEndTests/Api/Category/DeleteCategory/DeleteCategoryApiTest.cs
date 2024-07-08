@@ -7,6 +7,7 @@ namespace FC.Codeflix.Catalog.EndToEndTests.Api.Category.DeleteCategory;
 
 [Collection(nameof(DeleteCategoryApiTestFixture))]
 public class DeleteCategoryApiTest
+    : IDisposable
 {
     private readonly DeleteCategoryApiTestFixture _fixture;
 
@@ -55,4 +56,7 @@ public class DeleteCategoryApiTest
         response!.Status.Should().Be((int)StatusCodes.Status404NotFound);
         response!.Detail.Should().Be($"Category '{randomGuid}' not found.");
     }
+
+    public void Dispose()
+        => _fixture.CleanPersistence();
 }
