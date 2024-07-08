@@ -23,20 +23,17 @@ public class ApiClient
                 "application/json"
             )
         );
-        if (response.IsSuccessStatusCode)
-        {
-            var responseContent = await response.Content.ReadAsStringAsync();
-            TOutput? output = null;
-            if (string.IsNullOrWhiteSpace(responseContent) == false)
-                output = JsonSerializer.Deserialize<TOutput>(
-                    responseContent,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    }
-                );
-            return (response, output);
-        }
-        return (response, default);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        TOutput? output = null;
+        if (string.IsNullOrWhiteSpace(responseContent) == false)
+            output = JsonSerializer.Deserialize<TOutput>(
+                responseContent,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }
+            );
+        return (response, output);
     }
 }

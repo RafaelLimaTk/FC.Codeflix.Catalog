@@ -1,4 +1,5 @@
-﻿using FC.Codeflix.Catalog.Application.Utils;
+﻿using FC.Codeflix.Catalog.Api.Filters;
+using FC.Codeflix.Catalog.Application.Utils;
 
 namespace FC.Codeflix.Catalog.Api.Configurations;
 
@@ -7,7 +8,9 @@ public static class ApiConfig
     public static void AddConfigureApi(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddConnections(configuration);
-        services.AddControllers();
+        services.AddControllers(options =>
+            options.Filters.Add(typeof(ApiGlobalExceptionFilter))
+        );
         services.AddHttpContextAccessor();
         services.AddSwaggerConfiguration();
         services.AddRegister();

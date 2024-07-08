@@ -1,6 +1,7 @@
 ﻿using FC.Codeflix.Catalog.Application.UseCases.Category.Common;
 using FC.Codeflix.Catalog.Application.UseCases.Category.CreateCategory;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -68,7 +69,7 @@ public class CreateCategoryApiTest
         response.Should().NotBeNull();
         response!.Title.Should().Be("One or more validation errors occurred.");
         response.Type.Should().Be("UnprocessableEntity");
-        response.Status.Should().Be((int)HttpStatusCode.UnprocessableEntity);
+        response.Status.Should().Be((int)StatusCodes.Status422UnprocessableEntity);
         response.Detail.Should().Be(expectedDetail);
     }
 }
