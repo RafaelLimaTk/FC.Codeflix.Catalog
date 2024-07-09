@@ -99,6 +99,6 @@ public class CategoriesController : ControllerBase
         if (dir.HasValue) input.Dir = dir.Value;
 
         var response = await _mediator.Send(input, cancellationToken);
-        return Ok(response);
+        return Ok(new ApiResponseList<CategoryModelResponse>(response));
     }
 }
