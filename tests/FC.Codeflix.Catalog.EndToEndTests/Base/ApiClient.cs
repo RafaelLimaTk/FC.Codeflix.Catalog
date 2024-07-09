@@ -115,7 +115,10 @@ public class ApiClient
         if (queryStringParameterObject is null)
             return route;
 
-        var parameters = JsonSerializer.Serialize(queryStringParameterObject);
+        var parameters = JsonSerializer.Serialize(
+            queryStringParameterObject,
+            _defaulSerializerOptions
+        );
         var parametersDictionary = Newtonsoft.Json.JsonConvert
             .DeserializeObject<Dictionary<string, object>>(parameters);
 
