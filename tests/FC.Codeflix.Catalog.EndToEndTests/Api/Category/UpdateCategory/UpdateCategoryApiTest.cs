@@ -1,4 +1,5 @@
 ﻿using FC.Codeflix.Catalog.Api.ApiModels.Category;
+using FC.Codeflix.Catalog.Api.ApiModels.Response;
 using FC.Codeflix.Catalog.Application.UseCases.Category.Common;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -25,21 +26,20 @@ public class UpdateCategoryApiTest
         var exampleCategory = exampleCategoriesList[10];
         var input = _fixture.GetExampleInput();
 
-        var (httpMessage, reponse) = await _fixture.ApiClient.Put<CategoryModelResponse>(
+        var (httpMessage, response) = await _fixture.ApiClient.Put<ApiResponse<CategoryModelResponse>>(
             $"/categories/{exampleCategory.Id}",
             input
         );
 
         httpMessage.Should().NotBeNull();
         httpMessage!.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status200OK);
-        reponse.Should().NotBeNull();
-        reponse!.Should().NotBeNull();
-        reponse!.Id.Should().Be(exampleCategory.Id);
-        reponse.Name.Should().Be(input.Name);
-        reponse.Description.Should().Be(input.Description);
-        reponse.IsActive.Should().Be((bool)input.IsActive!);
-        var dbCategory = await _fixture
-            .Persistence.GetById(exampleCategory.Id);
+        response.Should().NotBeNull();
+        response!.Data.Should().NotBeNull();
+        response.Data.Id.Should().Be(exampleCategory.Id);
+        response.Data.Name.Should().Be(input.Name);
+        response.Data.Description.Should().Be(input.Description);
+        response.Data.IsActive.Should().Be((bool)input.IsActive!);
+        var dbCategory = await _fixture.Persistence.GetById(exampleCategory.Id);
         dbCategory.Should().NotBeNull();
         dbCategory!.Name.Should().Be(input.Name);
         dbCategory.Description.Should().Be(input.Description);
@@ -57,21 +57,20 @@ public class UpdateCategoryApiTest
             _fixture.GetValidCategoryName()
         );
 
-        var (httpMessage, reponse) = await _fixture.ApiClient.Put<CategoryModelResponse>(
+        var (httpMessage, response) = await _fixture.ApiClient.Put<ApiResponse<CategoryModelResponse>>(
             $"/categories/{exampleCategory.Id}",
             input
         );
 
         httpMessage.Should().NotBeNull();
         httpMessage!.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status200OK);
-        reponse.Should().NotBeNull();
-        reponse!.Should().NotBeNull();
-        reponse!.Id.Should().Be(exampleCategory.Id);
-        reponse.Name.Should().Be(input.Name);
-        reponse.Description.Should().Be(exampleCategory.Description);
-        reponse.IsActive.Should().Be(exampleCategory.IsActive);
-        var dbCategory = await _fixture
-            .Persistence.GetById(exampleCategory.Id);
+        response.Should().NotBeNull();
+        response!.Data.Should().NotBeNull();
+        response.Data.Id.Should().Be(exampleCategory.Id);
+        response.Data.Name.Should().Be(input.Name);
+        response.Data.Description.Should().Be(exampleCategory.Description);
+        response.Data.IsActive.Should().Be(exampleCategory.IsActive);
+        var dbCategory = await _fixture.Persistence.GetById(exampleCategory.Id);
         dbCategory.Should().NotBeNull();
         dbCategory!.Name.Should().Be(input.Name);
         dbCategory.Description.Should().Be(exampleCategory.Description);
@@ -90,21 +89,20 @@ public class UpdateCategoryApiTest
             _fixture.GetValidCategoryDescription()
         );
 
-        var (httpMessage, reponse) = await _fixture.ApiClient.Put<CategoryModelResponse>(
+        var (httpMessage, response) = await _fixture.ApiClient.Put<ApiResponse<CategoryModelResponse>>(
             $"/categories/{exampleCategory.Id}",
             input
         );
 
         httpMessage.Should().NotBeNull();
         httpMessage!.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status200OK);
-        reponse.Should().NotBeNull();
-        reponse!.Should().NotBeNull();
-        reponse!.Id.Should().Be(exampleCategory.Id);
-        reponse.Name.Should().Be(input.Name);
-        reponse.Description.Should().Be(input.Description);
-        reponse.IsActive.Should().Be(exampleCategory.IsActive);
-        var dbCategory = await _fixture
-            .Persistence.GetById(exampleCategory.Id);
+        response.Should().NotBeNull();
+        response!.Data.Should().NotBeNull();
+        response.Data.Id.Should().Be(exampleCategory.Id);
+        response.Data.Name.Should().Be(input.Name);
+        response.Data.Description.Should().Be(input.Description);
+        response.Data.IsActive.Should().Be(exampleCategory.IsActive);
+        var dbCategory = await _fixture.Persistence.GetById(exampleCategory.Id);
         dbCategory.Should().NotBeNull();
         dbCategory!.Name.Should().Be(input.Name);
         dbCategory.Description.Should().Be(input.Description);
@@ -120,18 +118,18 @@ public class UpdateCategoryApiTest
         var randomGuid = Guid.NewGuid();
         var input = _fixture.GetExampleInput();
 
-        var (httpMessage, reponse) = await _fixture.ApiClient.Put<ProblemDetails>(
+        var (httpMessage, response) = await _fixture.ApiClient.Put<ProblemDetails>(
             $"/categories/{randomGuid}",
             input
         );
 
         httpMessage.Should().NotBeNull();
         httpMessage!.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status404NotFound);
-        reponse.Should().NotBeNull();
-        reponse!.Title.Should().Be("Not Found");
-        reponse.Type.Should().Be("NotFound");
-        reponse.Status.Should().Be((int)StatusCodes.Status404NotFound);
-        reponse.Detail.Should().Be($"Category '{randomGuid}' not found.");
+        response.Should().NotBeNull();
+        response!.Title.Should().Be("Not Found");
+        response.Type.Should().Be("NotFound");
+        response.Status.Should().Be((int)StatusCodes.Status404NotFound);
+        response.Detail.Should().Be($"Category '{randomGuid}' not found.");
     }
 
     [Theory(DisplayName = nameof(ErrorWhenCantInstantiateAggregate))]

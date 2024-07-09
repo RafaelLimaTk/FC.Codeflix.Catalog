@@ -1,10 +1,21 @@
-﻿using FC.Codeflix.Catalog.Application.UseCases.Category.Common;
+﻿using FC.Codeflix.Catalog.Api.ApiModels.Response;
+using FC.Codeflix.Catalog.Application.UseCases.Category.Common;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
 namespace FC.Codeflix.Catalog.EndToEndTests.Api.Category.GetCategory;
+
+public class GetCategoryResponse
+{
+    public GetCategoryResponse(CategoryModelResponse data)
+    {
+        Data = data;
+    }
+
+    public CategoryModelResponse Data { get; set; }
+}
 
 [Collection(nameof(GetCategoryApiTestFixture))]
 public class GetCategoryApiTest
@@ -24,19 +35,18 @@ public class GetCategoryApiTest
         var exampleCategory = exampleCategoriesList[10];
 
         var (httpMessage, response) = await _fixture.ApiClient
-            .Get<CategoryModelResponse>(
+            .Get<ApiResponse<CategoryModelResponse>>(
                 $"/categories/{exampleCategory.Id}"
             );
 
         httpMessage.Should().NotBeNull();
         httpMessage!.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status200OK);
-        response.Should().NotBeNull();
-        response!.Should().NotBeNull();
-        response!.Id.Should().Be(exampleCategory.Id);
-        response.Name.Should().Be(exampleCategory.Name);
-        response.Description.Should().Be(exampleCategory.Description);
-        response.IsActive.Should().Be(exampleCategory.IsActive);
-        response.CreatedAt.Should().BeSameDateAs(exampleCategory.CreatedAt);
+        response!.Data.Should().NotBeNull();
+        response!.Data.Id.Should().Be(exampleCategory.Id);
+        response.Data.Name.Should().Be(exampleCategory.Name);
+        response.Data.Description.Should().Be(exampleCategory.Description);
+        response.Data.IsActive.Should().Be(exampleCategory.IsActive);
+        response.Data.CreatedAt.Should().BeSameDateAs(exampleCategory.CreatedAt);
     }
 
     [Fact(DisplayName = nameof(ErrorWhenCategoryNotFound))]
