@@ -38,7 +38,7 @@ public class ApiGlobalExceptionFilter : IExceptionFilter
         else
         {
             details.Title = "An unexpected error ocurred";
-            details.Status = StatusCodes.Status422UnprocessableEntity;
+            details.Status = StatusCodes.Status500InternalServerError;
             details.Type = "UnexpectedError";
             details.Detail = exception.Message;
         }

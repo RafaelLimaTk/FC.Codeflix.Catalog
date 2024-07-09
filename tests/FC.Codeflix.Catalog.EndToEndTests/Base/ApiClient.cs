@@ -1,15 +1,35 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
+﻿using FC.Codeflix.Catalog.EndToEndTests.Extensions.String;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 using System.Text.Json;
 
 namespace FC.Codeflix.Catalog.EndToEndTests.Base;
 
+public class SnakeCaseNamingPolicy : JsonNamingPolicy
+{
+    public override string ConvertName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return name;
+
+        return name.ToSnakeCase();
+    }
+}
+
 public class ApiClient
 {
     private readonly HttpClient _httpClient;
+    private readonly JsonSerializerOptions _defaulSerializerOptions;
 
     public ApiClient(HttpClient httpClient)
-        => _httpClient = httpClient;
+    {
+        _httpClient = httpClient;
+        _defaulSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = new SnakeCaseNamingPolicy(),
+            PropertyNameCaseInsensitive = true
+        };
+    }
 
     public async Task<(HttpResponseMessage?, TOutput?)> Post<TOutput>(
         string url,
@@ -19,7 +39,10 @@ public class ApiClient
         var response = await _httpClient.PostAsync(
             url,
             new StringContent(
-                JsonSerializer.Serialize(input),
+                JsonSerializer.Serialize(
+                    input,
+                    _defaulSerializerOptions
+                ),
                 Encoding.UTF8,
                 "application/json"
             )
@@ -57,7 +80,10 @@ public class ApiClient
         var response = await _httpClient.PutAsync(
             route,
             new StringContent(
-                JsonSerializer.Serialize(input),
+                JsonSerializer.Serialize(
+                    input,
+                    _defaulSerializerOptions
+                ),
                 Encoding.UTF8,
                 "application/json"
             )
@@ -75,10 +101,7 @@ public class ApiClient
         if (string.IsNullOrWhiteSpace(responseContent) == false)
             output = JsonSerializer.Deserialize<TOutput>(
                 responseContent,
-                new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                }
+                _defaulSerializerOptions
             );
 
         return output;

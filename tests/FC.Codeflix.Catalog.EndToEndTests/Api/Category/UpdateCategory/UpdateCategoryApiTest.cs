@@ -1,5 +1,5 @@
-﻿using FC.Codeflix.Catalog.Application.UseCases.Category.Common;
-using FC.Codeflix.Catalog.Application.UseCases.Category.UpdateCategory;
+﻿using FC.Codeflix.Catalog.Api.ApiModels.Category;
+using FC.Codeflix.Catalog.Application.UseCases.Category.Common;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -53,8 +53,7 @@ public class UpdateCategoryApiTest
         var exampleCategoriesList = _fixture.GetExampleCategoriesList(20);
         await _fixture.Persistence.InsertList(exampleCategoriesList);
         var exampleCategory = exampleCategoriesList[10];
-        var input = new UpdateCategoryRequest(
-            exampleCategory.Id,
+        var input = new UpdateCategoryApiRequest(
             _fixture.GetValidCategoryName()
         );
 
@@ -86,8 +85,7 @@ public class UpdateCategoryApiTest
         var exampleCategoriesList = _fixture.GetExampleCategoriesList(20);
         await _fixture.Persistence.InsertList(exampleCategoriesList);
         var exampleCategory = exampleCategoriesList[10];
-        var input = new UpdateCategoryRequest(
-            exampleCategory.Id,
+        var input = new UpdateCategoryApiRequest(
             _fixture.GetValidCategoryName(),
             _fixture.GetValidCategoryDescription()
         );
@@ -143,7 +141,7 @@ public class UpdateCategoryApiTest
     MemberType = typeof(UpdateCategoryApiTestDataGenerator)
     )]
     public async void ErrorWhenCantInstantiateAggregate(
-        UpdateCategoryRequest input,
+        UpdateCategoryApiRequest input,
         string expectedDetail
     )
     {
