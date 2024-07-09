@@ -1,4 +1,5 @@
-﻿using FC.Codeflix.Catalog.Application.UseCases.Category.Common;
+﻿using FC.Codeflix.Catalog.Api.ApiModels.Response;
+using FC.Codeflix.Catalog.Application.UseCases.Category.Common;
 using FC.Codeflix.Catalog.Application.UseCases.Category.CreateCategory;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -23,7 +24,7 @@ public class CreateCategoryApiTest
         var input = _fixture.getExampleInput();
 
         var (httpMessage, response) = await _fixture.ApiClient
-            .Post<CategoryModelResponse>(
+            .Post<ApiResponse<CategoryModelResponse>>(
             "/categories",
             input
         );
@@ -31,14 +32,15 @@ public class CreateCategoryApiTest
         httpMessage.Should().NotBeNull();
         httpMessage!.StatusCode.Should().Be(HttpStatusCode.Created);
         response.Should().NotBeNull();
-        response!.Id.Should().NotBeEmpty();
-        response.Name.Should().Be(input.Name);
-        response.Description.Should().Be(input.Description);
-        response.IsActive.Should().Be(input.IsActive);
-        response.CreatedAt.Should()
+        response!.Data.Should().NotBeNull();
+        response.Data.Id.Should().NotBeEmpty();
+        response.Data.Name.Should().Be(input.Name);
+        response.Data.Description.Should().Be(input.Description);
+        response.Data.IsActive.Should().Be(input.IsActive);
+        response.Data.CreatedAt.Should()
             .NotBeSameDateAs(default(DateTime));
         var dbCategory = await _fixture.Persistence
-            .GetById(response.Id);
+            .GetById(response.Data.Id);
         dbCategory.Should().NotBeNull();
         dbCategory!.Id.Should().NotBeEmpty();
         dbCategory.Name.Should().Be(input.Name);
