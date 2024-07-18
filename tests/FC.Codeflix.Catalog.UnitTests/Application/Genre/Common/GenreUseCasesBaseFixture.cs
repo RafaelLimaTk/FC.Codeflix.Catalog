@@ -1,4 +1,7 @@
-﻿using FC.Codeflix.Catalog.UnitTests.Common;
+﻿using FC.Codeflix.Catalog.Application.Interfaces;
+using FC.Codeflix.Catalog.Domain.Interfaces;
+using FC.Codeflix.Catalog.UnitTests.Common;
+using Moq;
 using DomainEntity = FC.Codeflix.Catalog.Domain.Entities;
 
 namespace FC.Codeflix.Catalog.UnitTests.Application.Genre.Common;
@@ -41,6 +44,15 @@ public class GenreUseCasesBaseFixture
             .Range(1, count ?? (new Random()).Next(1, 10))
             .Select(_ => Guid.NewGuid())
             .ToList();
+
+    public Mock<IGenreRepository> GetGenreRepositoryMock()
+        => new();
+
+    public Mock<IUnitOfWork> GetUnitOfWorkMock()
+        => new();
+
+    public Mock<ICategoryRepository> GetCategoryRepositoryMock()
+        => new();
 
     public string GetValidCategoryName()
     {

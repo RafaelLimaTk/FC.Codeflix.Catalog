@@ -126,6 +126,34 @@ public class CategoryRepositoryTest
         dbCategory.Should().BeNull();
     }
 
+    [Fact(DisplayName = nameof(IdsListByIds))]
+    [Trait("Integration/Infra.Data", "CategoryRepository - Repositories")]
+    public async Task IdsListByIds()
+    {
+        CodeflixCatalogDbContext dbContext = _fixture.CreateDbContext();
+        var exampleCategoriesList = _fixture.GetExampleCategoriesList(15);
+        List<Guid> categoriesIdsToGet = Enumerable.Range(1, 3).Select(_ =>
+        {
+            int indexToGet = (new Random()).Next(0, exampleCategoriesList.Count - 1);
+            return exampleCategoriesList[indexToGet].Id;
+        }).Distinct().ToList();
+        await dbContext.AddRangeAsync(exampleCategoriesList);
+        await dbContext.SaveChangesAsync(CancellationToken.None);
+        var categoryRepository = new Repository.CategoryRepository(dbContext);
+        IReadOnlyList<Guid> categoriesList = await categoryRepository
+            .GetIdsListByIds(categoriesIdsToGet, CancellationToken.None);
+
+        categoriesList.Should().NotBeNull();
+        categoriesList.Should().HaveCount(categoriesIdsToGet.Count);
+        foreach (Guid outputItem in categoriesList)
+        {
+            var exampleItem = exampleCategoriesList.Find(
+                category => category.Id == outputItem
+            );
+            exampleItem.Should().NotBeNull();
+        }
+    }
+
     [Fact(DisplayName = nameof(SearchRetursListAndTotal))]
     [Trait("Integration/Infra.Data", "CategoryRepository - Repositories")]
     public async Task SearchRetursListAndTotal()
@@ -183,11 +211,11 @@ public class CategoryRepositoryTest
     [InlineData(7, 2, 5, 2)]
     [InlineData(7, 3, 5, 0)]
     public async Task SearchRetursPaginated(
-    int quantityCategoriesToGenerate,
-    int page,
-    int perPage,
-    int expectedQuantityItems
-)
+        int quantityCategoriesToGenerate,
+        int page,
+        int perPage,
+        int expectedQuantityItems
+    )
     {
         CodeflixCatalogDbContext dbContext = _fixture.CreateDbContext();
         var exampleCategoriesList =

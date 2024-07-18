@@ -75,4 +75,12 @@ public class CategoryRepository
         };
         return orderedQuery;
     }
+
+    public async Task<IReadOnlyList<Guid>> GetIdsListByIds(
+    List<Guid> ids,
+    CancellationToken cancellationToken
+    )
+        => await _categories.AsNoTracking()
+            .Where(category => ids.Contains(category.Id))
+            .Select(category => category.Id).ToListAsync();
 }
