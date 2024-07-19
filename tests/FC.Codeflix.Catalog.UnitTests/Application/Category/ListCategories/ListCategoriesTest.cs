@@ -116,13 +116,13 @@ public class ListCategoriesTest
     [Theory(DisplayName = nameof(ListInputWithoutAllParameters))]
     [Trait("Application", "ListCategories - Use Cases")]
     [MemberData(
-    nameof(ListCategoriesTestDataGenerator.GetInputsWithoutAllParameter),
-    parameters: 14,
-    MemberType = typeof(ListCategoriesTestDataGenerator)
-)]
+        nameof(ListCategoriesTestDataGenerator.GetInputsWithoutAllParameter),
+        parameters: 14,
+        MemberType = typeof(ListCategoriesTestDataGenerator)
+    )]
     public async Task ListInputWithoutAllParameters(
-    UseCases.ListCategoriesRequest input
-)
+        UseCases.ListCategoriesRequest input
+    )
     {
         var categoriesExampleList = _fixture.GetExampleCategoriesList();
         var repositoryMock = _fixture.GetRepositoryMock();
