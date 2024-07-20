@@ -129,12 +129,12 @@ public class ListCategoriesTest
     [InlineData("Sci-fi Other", 1, 3, 0, 0)]
     [InlineData("Robots", 1, 5, 2, 2)]
     public async Task SearchByText(
-    string search,
-    int page,
-    int perPage,
-    int expectedQuantityItemsReturned,
-    int expectedQuantityTotalItems
-)
+        string search,
+        int page,
+        int perPage,
+        int expectedQuantityItemsReturned,
+        int expectedQuantityTotalItems
+    )
     {
         var categoryNamesList = new List<string>() {
             "Action",
