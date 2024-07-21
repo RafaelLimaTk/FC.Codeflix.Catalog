@@ -1,5 +1,6 @@
 ﻿using FC.Codeflix.Catalog.Application.UseCases.Genre.ListGenres;
 using FC.Codeflix.Catalog.Infra.Data.EF;
+using FC.Codeflix.Catalog.Infra.Data.EF.Models;
 using FC.Codeflix.Catalog.Infra.Data.EF.Repositories;
 using FluentAssertions;
 using DomainEntity = FC.Codeflix.Catalog.Domain.Entities;
@@ -71,5 +72,72 @@ public class ListGenresTest
         output.PerPage.Should().Be(input.PerPage);
         output.Total.Should().Be(0);
         output.Items.Should().HaveCount(0);
+    }
+
+    [Fact(DisplayName = nameof(ListGenresVerifyRelations))]
+    [Trait("Integration/Application", "ListGenres - UseCases")]
+    public async Task ListGenresVerifyRelations()
+    {
+        List<DomainEntity.Genre> exampleGenres = _fixture.GetExampleListGenres(10);
+        List<DomainEntity.Category> exampleCategories = _fixture.GetExampleCategoriesList(10);
+        Random random = new Random();
+        exampleGenres.ForEach(genre =>
+        {
+            int relationsCount = random.Next(0, 3);
+            for (int i = 0; i < relationsCount; i++)
+            {
+                int selectedCategoryIndex = random.Next(0, exampleCategories.Count - 1);
+                DomainEntity.Category selected = exampleCategories[selectedCategoryIndex];
+                if (!genre.Categories.Contains(selected.Id))
+                    genre.AddCategory(selected.Id);
+            }
+        });
+        List<GenresCategories> genresCategories = new List<GenresCategories>();
+        exampleGenres.ForEach(
+            genre => genre.Categories.ToList().ForEach(
+                categoryId => genresCategories.Add(
+                    new GenresCategories(categoryId, genre.Id)
+                )
+            )
+        );
+        CodeflixCatalogDbContext arrangeDbContext = _fixture.CreateDbContext();
+        await arrangeDbContext.AddRangeAsync(exampleGenres);
+        await arrangeDbContext.AddRangeAsync(exampleCategories);
+        await arrangeDbContext.AddRangeAsync(genresCategories);
+        await arrangeDbContext.SaveChangesAsync();
+        CodeflixCatalogDbContext actDbContext = _fixture.CreateDbContext(true);
+        UseCase.ListGenres useCase = new UseCase.ListGenres(
+            new GenreRepository(actDbContext),
+            new CategoryRepository(actDbContext)
+        );
+        UseCase.ListGenresRequest input = new UseCase.ListGenresRequest(1, 20);
+
+        ListGenresResponse output = await useCase.Handle(
+            input,
+            CancellationToken.None
+        );
+
+        output.Should().NotBeNull();
+        output.Page.Should().Be(input.Page);
+        output.PerPage.Should().Be(input.PerPage);
+        output.Total.Should().Be(exampleGenres.Count);
+        output.Items.Should().HaveCount(exampleGenres.Count);
+        output.Items.ToList().ForEach(outputItem =>
+        {
+            DomainEntity.Genre? exampleItem =
+                exampleGenres.Find(example => example.Id == outputItem.Id);
+            exampleItem.Should().NotBeNull();
+            outputItem.Name.Should().Be(exampleItem!.Name);
+            outputItem.IsActive.Should().Be(exampleItem.IsActive);
+            List<Guid> outputItemCategoryIds = outputItem.Categories.Select(x => x.Id).ToList();
+            outputItemCategoryIds.Should().BeEquivalentTo(exampleItem.Categories);
+            outputItem.Categories.ToList().ForEach(outputCategory =>
+            {
+                DomainEntity.Category? exampleCategory =
+                    exampleCategories.Find(x => x.Id == outputCategory.Id);
+                exampleCategory.Should().NotBeNull();
+                outputCategory.Name.Should().Be(exampleCategory!.Name);
+            });
+        });
     }
 }
