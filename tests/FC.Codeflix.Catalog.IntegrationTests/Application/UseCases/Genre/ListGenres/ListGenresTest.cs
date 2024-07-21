@@ -49,4 +49,27 @@ public class ListGenresTest
             outputItem.IsActive.Should().Be(exampleItem.IsActive);
         });
     }
+
+    [Fact(DisplayName = nameof(ListGenresReturnsEmptyWhenPersistenceIsEmpty))]
+    [Trait("Integration/Application", "ListGenres - UseCases")]
+    public async Task ListGenresReturnsEmptyWhenPersistenceIsEmpty()
+    {
+        CodeflixCatalogDbContext actDbContext = _fixture.CreateDbContext();
+        UseCase.ListGenres useCase = new UseCase.ListGenres(
+            new GenreRepository(actDbContext),
+            new CategoryRepository(actDbContext)
+        );
+        UseCase.ListGenresRequest input = new UseCase.ListGenresRequest(1, 20);
+
+        ListGenresResponse output = await useCase.Handle(
+            input,
+            CancellationToken.None
+        );
+
+        output.Should().NotBeNull();
+        output.Page.Should().Be(input.Page);
+        output.PerPage.Should().Be(input.PerPage);
+        output.Total.Should().Be(0);
+        output.Items.Should().HaveCount(0);
+    }
 }
