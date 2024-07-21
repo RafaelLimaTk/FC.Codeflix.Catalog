@@ -1,4 +1,5 @@
-﻿using FC.Codeflix.Catalog.Application.UseCases.Genre.Common;
+﻿using FC.Codeflix.Catalog.Application.Exceptions;
+using FC.Codeflix.Catalog.Application.UseCases.Genre.Common;
 using FC.Codeflix.Catalog.Application.UseCases.Genre.CreateGenre;
 using FC.Codeflix.Catalog.Infra.Data.EF;
 using FC.Codeflix.Catalog.Infra.Data.EF.Models;
@@ -105,5 +106,40 @@ public class CreateGenreTest
         List<Guid> categoryIdsRelatedFromDb =
             relations.Select(relation => relation.CategoryId).ToList();
         categoryIdsRelatedFromDb.Should().BeEquivalentTo(input.CategoriesId);
+    }
+
+    [Fact(DisplayName = nameof(CreateGenreThrowsWhenCategoryDoesntExists))]
+    [Trait("Integration/Application", "CreateGenre - Use Cases")]
+    public async Task CreateGenreThrowsWhenCategoryDoesntExists()
+    {
+        List<DomainEntity.Category> exampleCategories =
+            _fixture.GetExampleCategoriesList(5);
+        CodeflixCatalogDbContext arrangeDbContext = _fixture.CreateDbContext();
+        await arrangeDbContext.Categories.AddRangeAsync(exampleCategories);
+        await arrangeDbContext.SaveChangesAsync();
+        CreateGenreRequest input = _fixture.GetExampleInput();
+        input.CategoriesId = exampleCategories
+            .Select(category => category.Id).ToList();
+        Guid randomGuid = Guid.NewGuid();
+        input.CategoriesId.Add(randomGuid);
+        CodeflixCatalogDbContext actDbContext = _fixture.CreateDbContext(true);
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging();
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        //var eventPublisher = new DomainEventPublisher(serviceProvider);
+        var unitOfWork = new UnitOfWork(actDbContext);
+        UseCase.CreateGenre createGenre = new UseCase.CreateGenre(
+            new GenreRepository(actDbContext),
+            unitOfWork,
+            new CategoryRepository(actDbContext)
+        );
+
+        Func<Task<GenreModelResponse>> action = async () => await createGenre.Handle(
+            input,
+            CancellationToken.None
+        );
+
+        await action.Should().ThrowAsync<RelatedAggregateException>()
+            .WithMessage($"Related category id (or ids) not found: {randomGuid}");
     }
 }
