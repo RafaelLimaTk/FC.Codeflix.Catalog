@@ -1,4 +1,5 @@
-﻿using FC.Codeflix.Catalog.Infra.Data.EF;
+﻿using FC.Codeflix.Catalog.Application.Exceptions;
+using FC.Codeflix.Catalog.Infra.Data.EF;
 using FC.Codeflix.Catalog.Infra.Data.EF.Models;
 using FC.Codeflix.Catalog.Infra.Data.EF.Repositories;
 using FluentAssertions;
@@ -84,5 +85,33 @@ public class DeleteGenreTest
             .Where(relation => relation.GenreId == targetGenre.Id)
             .ToListAsync();
         relations.Should().HaveCount(0);
+    }
+
+    [Fact(DisplayName = nameof(DeleteGenreThrowsWhenNotFound))]
+    [Trait("Integration/Application", "DeleteGenre - Use Cases")]
+    public async Task DeleteGenreThrowsWhenNotFound()
+    {
+        var genresExampleList = _fixture.GetExampleListGenres(10);
+        var dbArrangeContext = _fixture.CreateDbContext();
+        await dbArrangeContext.Genres.AddRangeAsync(genresExampleList);
+        await dbArrangeContext.SaveChangesAsync();
+        var actDbContext = _fixture.CreateDbContext(true);
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging();
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        //var eventPublisher = new DomainEventPublisher(serviceProvider);
+        var unitOfWork = new UnitOfWork(actDbContext);
+        var useCase = new UseCase.DeleteGenre(
+            new GenreRepository(actDbContext),
+            unitOfWork
+        );
+        var randomGuid = Guid.NewGuid();
+        var input = new UseCase.DeleteGenreRequest(randomGuid);
+
+        Func<Task> action =
+            async () => await useCase.Handle(input, CancellationToken.None);
+
+        await action.Should().ThrowAsync<NotFoundException>()
+            .WithMessage($"Genre '{randomGuid}' not found.");
     }
 }
