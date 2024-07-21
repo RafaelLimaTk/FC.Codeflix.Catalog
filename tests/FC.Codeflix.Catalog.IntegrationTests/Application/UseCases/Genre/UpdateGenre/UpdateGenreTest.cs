@@ -1,4 +1,5 @@
-﻿using FC.Codeflix.Catalog.Application.UseCases.Genre.Common;
+﻿using FC.Codeflix.Catalog.Application.Exceptions;
+using FC.Codeflix.Catalog.Application.UseCases.Genre.Common;
 using FC.Codeflix.Catalog.Application.UseCases.Genre.UpdateGenre;
 using FC.Codeflix.Catalog.Infra.Data.EF;
 using FC.Codeflix.Catalog.Infra.Data.EF.Models;
@@ -252,5 +253,91 @@ public class UpdateGenreTest
             .Select(relation => relation.CategoryId)
             .ToListAsync();
         relatedcategoryIdsFromDb.Should().BeEquivalentTo(new List<Guid>());
+    }
+
+    [Fact(DisplayName = nameof(UpdateGenreThrowsWhenCategoryDoesntExists))]
+    [Trait("Integration/Application", "UpdateGenre - Use Cases")]
+    public async Task UpdateGenreThrowsWhenCategoryDoesntExists()
+    {
+        List<DomainEntity.Category> exampleCategories = _fixture.GetExampleCategoriesList(10);
+        List<DomainEntity.Genre> exampleGenres = _fixture.GetExampleListGenres(10);
+        CodeflixCatalogDbContext arrangeDbContext = _fixture.CreateDbContext();
+        DomainEntity.Genre targetGenre = exampleGenres[5];
+        List<DomainEntity.Category> relatedCategories = exampleCategories.GetRange(0, 5);
+        List<DomainEntity.Category> newRelatedCategories = exampleCategories.GetRange(5, 3);
+        relatedCategories.ForEach(category => targetGenre.AddCategory(category.Id));
+        List<GenresCategories> relations = targetGenre.Categories
+            .Select(categoryId => new GenresCategories(categoryId, targetGenre.Id))
+            .ToList();
+        await arrangeDbContext.AddRangeAsync(exampleGenres);
+        await arrangeDbContext.AddRangeAsync(exampleCategories);
+        await arrangeDbContext.AddRangeAsync(relations);
+        await arrangeDbContext.SaveChangesAsync();
+        CodeflixCatalogDbContext actDbContext = _fixture.CreateDbContext(true);
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging();
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        //var eventPublisher = new DomainEventPublisher(serviceProvider);
+        var unitOfWork = new UnitOfWork(actDbContext);
+        UseCase.UpdateGenre updateGenre = new UseCase.UpdateGenre(
+            new GenreRepository(actDbContext),
+            unitOfWork,
+            new CategoryRepository(actDbContext)
+        );
+        List<Guid> categoryIdsToRelate = newRelatedCategories
+            .Select(category => category.Id).ToList();
+        Guid invalidCategoryId = Guid.NewGuid();
+        categoryIdsToRelate.Add(invalidCategoryId);
+        UpdateGenreRequest input = new UpdateGenreRequest(
+            targetGenre.Id,
+            _fixture.GetValidGenreName(),
+            !targetGenre.IsActive,
+            categoryIdsToRelate
+        );
+
+        Func<Task<GenreModelResponse>> action =
+            async () => await updateGenre.Handle(
+                input,
+                CancellationToken.None
+            );
+
+        await action.Should().ThrowAsync<RelatedAggregateException>()
+            .WithMessage($"Related category id (or ids) not found: {invalidCategoryId}");
+    }
+
+    [Fact(DisplayName = nameof(UpdateGenreThrowsWhenNotFound))]
+    [Trait("Integration/Application", "UpdateGenre - Use Cases")]
+    public async Task UpdateGenreThrowsWhenNotFound()
+    {
+        List<DomainEntity.Genre> exampleGenres = _fixture.GetExampleListGenres(10);
+        CodeflixCatalogDbContext arrangeDbContext = _fixture.CreateDbContext();
+        await arrangeDbContext.AddRangeAsync(exampleGenres);
+        await arrangeDbContext.SaveChangesAsync();
+        CodeflixCatalogDbContext actDbContext = _fixture.CreateDbContext(true);
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging();
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        //var eventPublisher = new DomainEventPublisher(serviceProvider);
+        var unitOfWork = new UnitOfWork(actDbContext);
+        UseCase.UpdateGenre updateGenre = new UseCase.UpdateGenre(
+            new GenreRepository(actDbContext),
+            unitOfWork,
+            new CategoryRepository(actDbContext)
+        );
+        Guid randomGuid = Guid.NewGuid();
+        UpdateGenreRequest input = new UpdateGenreRequest(
+            randomGuid,
+            _fixture.GetValidGenreName(),
+            true
+        );
+
+        Func<Task<GenreModelResponse>> action =
+            async () => await updateGenre.Handle(
+                input,
+                CancellationToken.None
+            );
+
+        await action.Should().ThrowAsync<NotFoundException>()
+            .WithMessage($"Genre '{randomGuid}' not found.");
     }
 }
