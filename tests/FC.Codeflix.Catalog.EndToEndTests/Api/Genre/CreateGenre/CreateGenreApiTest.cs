@@ -41,5 +41,46 @@ public class CreateGenreApiTest : IDisposable
         genreFromDb.IsActive.Should().Be(apiInput.IsActive);
     }
 
+    [Fact(DisplayName = nameof(CreateGenreWithRelations))]
+    [Trait("EndToEnd/Api", "Genre/CreateGenre - Endpoints")]
+    public async Task CreateGenreWithRelations()
+    {
+        var exampleCategories = _fixture.GetExampleCategoriesList(10);
+        await _fixture.CategoryPersistence.InsertList(exampleCategories);
+        var relatedCategories = exampleCategories
+            .Skip(3).Take(3).Select(x => x.Id).ToList();
+
+        var apiInput = new CreateGenreRequest(
+            _fixture.GetValidCategoryName(),
+            _fixture.GetRandomBoolean(),
+            relatedCategories
+        );
+
+        var (response, output) = await _fixture.ApiClient
+            .Post<ApiResponse<GenreModelResponse>>($"/genres", apiInput);
+
+        response.Should().NotBeNull();
+        response!.StatusCode.Should().Be((HttpStatusCode)StatusCodes.Status201Created);
+        output.Should().NotBeNull();
+        output!.Data.Should().NotBeNull();
+        output.Data.Id.Should().NotBeEmpty();
+        output.Data.Name.Should().Be(apiInput.Name);
+        output.Data.IsActive.Should().Be(apiInput.IsActive);
+        output.Data.Categories.Should().HaveCount(relatedCategories.Count);
+        var outputRelatedCategoryIds = output.Data.Categories.Select(x => x.Id).ToList();
+        outputRelatedCategoryIds.Should().BeEquivalentTo(relatedCategories);
+        var genreFromDb = await _fixture.GenrePersistence.GetById(output.Data.Id);
+        genreFromDb.Should().NotBeNull();
+        genreFromDb!.Name.Should().Be(apiInput.Name);
+        genreFromDb.IsActive.Should().Be(apiInput.IsActive);
+        var relationsFromDb = await _fixture.GenrePersistence
+            .GetGenresCategoriesRelationsByGenreId(output.Data.Id);
+        relationsFromDb.Should().NotBeNull();
+        relationsFromDb.Should().HaveCount(relatedCategories.Count);
+        var relatedCategoriesIdsFromDb =
+            relationsFromDb.Select(x => x.CategoryId).ToList();
+        relatedCategoriesIdsFromDb.Should().BeEquivalentTo(relatedCategories);
+    }
+
     public void Dispose() => _fixture.CleanPersistence();
 }
