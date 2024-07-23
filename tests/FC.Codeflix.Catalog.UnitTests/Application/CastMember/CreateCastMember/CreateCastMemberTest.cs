@@ -1,4 +1,5 @@
 ﻿using FC.Codeflix.Catalog.Application.Interfaces;
+using FC.Codeflix.Catalog.Domain.Exceptions;
 using FC.Codeflix.Catalog.Domain.Interfaces;
 using FluentAssertions;
 using Moq;
@@ -49,5 +50,30 @@ public class CreateCastMemberTest
                 It.IsAny<CancellationToken>()
             ), Times.Once
         );
+    }
+
+    [Theory(DisplayName = nameof(ThrowsWhenInvalidName))]
+    [Trait("Application", "CreateCastMember - Use Cases")]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData(null)]
+    public async Task ThrowsWhenInvalidName(string? name)
+    {
+        var input = new UseCase.CreateCastMemberRequest(
+            name!,
+            _fixture.GetRandomCastMemberType()
+        );
+        var repositoryMock = new Mock<ICastMemberRepository>();
+        var unitOfWorkMock = new Mock<IUnitOfWork>();
+        var useCase = new UseCase.CreateCastMember(
+            repositoryMock.Object,
+            unitOfWorkMock.Object
+        );
+
+        var action = async ()
+            => await useCase.Handle(input, CancellationToken.None);
+
+        await action.Should().ThrowAsync<EntityValidationException>()
+            .WithMessage("Name should not be empty or null");
     }
 }
