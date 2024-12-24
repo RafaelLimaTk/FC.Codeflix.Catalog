@@ -11,10 +11,12 @@ public class CodeflixCatalogDbContext : DbContext
         : base(options)
     { }
 
-    public DbSet<Category> Categories { get; set; }
-    public DbSet<Genre> Genres { get; set; }
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Genre> Genres => Set<Genre>();
+    public DbSet<CastMember> CastMembers => Set<CastMember>();
 
-    public DbSet<GenresCategories> GenresCategories { get; set; }
+    public DbSet<GenresCategories> GenresCategories =>
+        Set<GenresCategories>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
