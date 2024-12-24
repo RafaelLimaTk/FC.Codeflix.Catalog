@@ -10,7 +10,7 @@ public class CastMember : AggregateRoot
     public DateTime CreatedAt { get; private set; }
 
     public CastMember(string name, CastMemberType type)
-    : base()
+        : base()
     {
         Name = name;
         Type = type;
