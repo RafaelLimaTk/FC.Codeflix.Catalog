@@ -12,6 +12,7 @@ public static class DependencyInjectionConfig
         #region Repositories
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
+        services.AddScoped<ICastMemberRepository, CastMemberRepository>();
         #endregion
 
         #region UnitOfWork
