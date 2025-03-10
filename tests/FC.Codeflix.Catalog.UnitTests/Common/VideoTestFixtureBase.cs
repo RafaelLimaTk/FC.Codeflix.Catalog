@@ -1,4 +1,5 @@
-﻿using DomainEntity = FC.Codeflix.Catalog.Domain.Entities;
+﻿using FC.Codeflix.Catalog.Domain.Enums;
+using DomainEntity = FC.Codeflix.Catalog.Domain.Entities;
 
 namespace FC.Codeflix.Catalog.UnitTests.Common;
 
@@ -10,8 +11,8 @@ public class VideoTestFixtureBase : BaseFixture
         GetValidYearLaunched(),
         GetRandomBoolean(),
         GetRandomBoolean(),
-        GetValidDuration()
-    //GetRandomRating()
+        GetValidDuration(),
+        GetRandomRating()
     );
 
     public DomainEntity.Video GetValidVideoWithAllProperties()
@@ -22,8 +23,8 @@ public class VideoTestFixtureBase : BaseFixture
             GetValidYearLaunched(),
             GetRandomBoolean(),
             GetRandomBoolean(),
-            GetValidDuration()
-        //GetRandomRating()
+            GetValidDuration(),
+            GetRandomRating()
         );
 
         //video.UpdateBanner(GetValidImagePath());
@@ -42,6 +43,13 @@ public class VideoTestFixtureBase : BaseFixture
         //    .ForEach(_ => video.AddGenre(Guid.NewGuid()));
 
         return video;
+    }
+
+    public Rating GetRandomRating()
+    {
+        var enumValue = Enum.GetValues<Rating>();
+        var random = new Random();
+        return enumValue[random.Next(enumValue.Length)];
     }
 
     public string GetValidTitle()
