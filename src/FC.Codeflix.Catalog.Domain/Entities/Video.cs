@@ -69,4 +69,7 @@ public class Video : AggregateRoot
 
     public void UpdateThumbHalf(string path)
         => ThumbHalf = new Image(path);
+
+    public void UpdateBanner(string path)
+        => Banner = new Image(path);
 }
