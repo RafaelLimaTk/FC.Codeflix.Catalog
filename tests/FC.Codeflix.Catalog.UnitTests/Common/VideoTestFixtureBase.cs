@@ -27,9 +27,9 @@ public class VideoTestFixtureBase : BaseFixture
             GetRandomRating()
         );
 
-        //video.UpdateBanner(GetValidImagePath());
-        //video.UpdateThumb(GetValidImagePath());
-        //video.UpdateThumbHalf(GetValidImagePath());
+        video.UpdateBanner(GetValidImagePath());
+        video.UpdateThumb(GetValidImagePath());
+        video.UpdateThumbHalf(GetValidImagePath());
 
         //video.UpdateMedia(GetValidMediaPath());
         //video.UpdateTrailer(GetValidMediaPath());
@@ -88,4 +88,7 @@ public class VideoTestFixtureBase : BaseFixture
         var random = new Random();
         return exampleMedias[random.Next(exampleMedias.Length)];
     }
+
+    public DomainEntity.Media GetValidMedia()
+        => new(GetValidMediaPath());
 }

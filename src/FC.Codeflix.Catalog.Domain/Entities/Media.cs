@@ -13,4 +13,19 @@ public class Media : SeedWorks.Entity
         FilePath = filePath;
         Status = MediaStatus.Pending;
     }
+
+    public void UpdateAsSentToEncode()
+        => Status = MediaStatus.Processing;
+
+    public void UpdateAsEncoded(string encodedExamplePath)
+    {
+        Status = MediaStatus.Completed;
+        EncodedPath = encodedExamplePath;
+    }
+
+    public void UpdateAsEncodingError()
+    {
+        Status = MediaStatus.Error;
+        EncodedPath = null;
+    }
 }
