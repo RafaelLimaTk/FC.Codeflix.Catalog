@@ -42,6 +42,9 @@ public class VideoTest
         video.Published.Should().Be(expectedPublished);
         video.Duration.Should().Be(expectedDuration);
         video.CreatedAt.Should().BeCloseTo(expectedCreatedDate, TimeSpan.FromSeconds(10));
+        video.Thumb.Should().BeNull();
+        video.ThumbHalf.Should().BeNull();
+        video.Banner.Should().BeNull();
     }
 
     [Fact(DisplayName = nameof(ValidateWhenValidState))]
@@ -219,5 +222,31 @@ public class VideoTest
             new ValidationError("'Title' should be less or equal 255 characters long"),
             new ValidationError("'Description' should be less or equal 4000 characters long")
         });
+    }
+
+    [Fact(DisplayName = nameof(UpdateThumb))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void UpdateThumb()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var validImagePath = _fixture.GetValidImagePath();
+
+        validVideo.UpdateThumb(validImagePath);
+
+        validVideo.Thumb.Should().NotBeNull();
+        validVideo.Thumb!.Path.Should().Be(validImagePath);
+    }
+
+    [Fact(DisplayName = nameof(UpdateThumbHalf))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void UpdateThumbHalf()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var validImagePath = _fixture.GetValidImagePath();
+
+        validVideo.UpdateThumbHalf(validImagePath);
+
+        validVideo.ThumbHalf.Should().NotBeNull();
+        validVideo.ThumbHalf!.Path.Should().Be(validImagePath);
     }
 }
