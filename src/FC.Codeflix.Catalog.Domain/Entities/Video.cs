@@ -1,4 +1,5 @@
 ﻿using FC.Codeflix.Catalog.Domain.Enums;
+using FC.Codeflix.Catalog.Domain.Exceptions;
 using FC.Codeflix.Catalog.Domain.SeedWorks;
 using FC.Codeflix.Catalog.Domain.Validations;
 using FC.Codeflix.Catalog.Domain.Validators;
@@ -21,6 +22,18 @@ public class Video : AggregateRoot
     public Image? ThumbHalf { get; private set; }
     public Image? Banner { get; private set; }
 
+    public Media? Media { get; private set; }
+    public Media? Trailer { get; private set; }
+
+    private List<Guid> _categories;
+    public IReadOnlyList<Guid> Categories => _categories.AsReadOnly();
+
+    private List<Guid> _genres;
+    public IReadOnlyList<Guid> Genres => _genres.AsReadOnly();
+
+    private List<Guid> _castMembers;
+    public IReadOnlyList<Guid> CastMembers => _castMembers.AsReadOnly();
+
     public Video(
         string title,
         string description,
@@ -38,6 +51,10 @@ public class Video : AggregateRoot
         Published = published;
         Duration = duration;
         Rating = rating;
+
+        _categories = new();
+        _genres = new();
+        _castMembers = new();
 
         CreatedAt = DateTime.Now;
     }
@@ -72,4 +89,60 @@ public class Video : AggregateRoot
 
     public void UpdateBanner(string path)
         => Banner = new Image(path);
+
+    public void UpdateMedia(string path)
+    {
+        Media = new Media(path);
+    }
+
+    public void UpdateTrailer(string path)
+        => Trailer = new Media(path);
+
+    public void UpdateAsSentToEncode()
+    {
+        if (Media is null)
+            throw new EntityValidationException("There is no Media");
+        Media.UpdateAsSentToEncode();
+    }
+
+    public void UpdateAsEncoded(string validEncodedPath)
+    {
+        if (Media is null)
+            throw new EntityValidationException("There is no Media");
+        Media.UpdateAsEncoded(validEncodedPath);
+    }
+
+    public void UpdateAsEncodingError()
+    {
+        if (Media is null)
+            throw new EntityValidationException("There is no Media");
+        Media.UpdateAsEncodingError();
+    }
+
+    public void AddCategory(Guid categoryId)
+        => _categories.Add(categoryId);
+
+    public void RemoveCategory(Guid categoryId)
+        => _categories.Remove(categoryId);
+
+    public void RemoveAllCategories()
+        => _categories = new();
+
+    public void AddGenre(Guid genreId)
+        => _genres.Add(genreId);
+
+    public void RemoveGenre(Guid genreId)
+        => _genres.Remove(genreId);
+
+    public void RemoveAllGenres()
+        => _genres = new();
+
+    public void AddCastMember(Guid castMemberId)
+        => _castMembers.Add(castMemberId);
+
+    public void RemoveCastMember(Guid castMemberid)
+        => _castMembers.Remove(castMemberid);
+
+    public void RemoveAllCastMembers()
+        => _castMembers = new();
 }

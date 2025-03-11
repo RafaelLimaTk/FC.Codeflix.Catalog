@@ -1,5 +1,7 @@
 ﻿namespace FC.Codeflix.Catalog.UnitTests.Domain.Entities.Video;
 
+using FC.Codeflix.Catalog.Domain.Enums;
+using FC.Codeflix.Catalog.Domain.Exceptions;
 using FC.Codeflix.Catalog.Domain.Validations;
 using FluentAssertions;
 using DomainEntity = FC.Codeflix.Catalog.Domain.Entities;
@@ -261,5 +263,243 @@ public class VideoTest
 
         validVideo.Banner.Should().NotBeNull();
         validVideo.Banner!.Path.Should().Be(validImagePath);
+    }
+
+    [Fact(DisplayName = nameof(UpdateMedia))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void UpdateMedia()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var validPath = _fixture.GetValidMediaPath();
+
+        validVideo.UpdateMedia(validPath);
+
+        validVideo.Media.Should().NotBeNull();
+        validVideo.Media!.FilePath.Should().Be(validPath);
+    }
+
+    [Fact(DisplayName = nameof(UpdateAsSentToEncode))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void UpdateAsSentToEncode()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var validPath = _fixture.GetValidMediaPath();
+        validVideo.UpdateMedia(validPath);
+
+        validVideo.UpdateAsSentToEncode();
+
+        validVideo.Media!.Status.Should().Be(MediaStatus.Processing);
+    }
+
+    [Fact(DisplayName = nameof(UpdateAsSentToEncodeThrowsWhenThereIsNoMedia))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void UpdateAsSentToEncodeThrowsWhenThereIsNoMedia()
+    {
+        var validVideo = _fixture.GetValidVideo();
+
+        var action = () => validVideo.UpdateAsSentToEncode();
+
+        action.Should().Throw<EntityValidationException>()
+            .WithMessage("There is no Media");
+    }
+
+    [Fact(DisplayName = nameof(UpdateAsEncodingError))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void UpdateAsEncodingError()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var validPath = _fixture.GetValidMediaPath();
+        validVideo.UpdateMedia(validPath);
+
+        validVideo.UpdateAsEncodingError();
+
+        validVideo.Media!.Status.Should().Be(MediaStatus.Error);
+        validVideo.Media!.EncodedPath.Should().BeNull();
+    }
+
+    [Fact(DisplayName = nameof(UpdateAsEncodingErrorThrowsWhenThereIsNoMedia))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void UpdateAsEncodingErrorThrowsWhenThereIsNoMedia()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var validPath = _fixture.GetValidMediaPath();
+
+        var action = () => validVideo.UpdateAsEncodingError();
+
+        action.Should().Throw<EntityValidationException>()
+            .WithMessage("There is no Media");
+    }
+
+    [Fact(DisplayName = nameof(UpdateAsEncoded))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void UpdateAsEncoded()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var validPath = _fixture.GetValidMediaPath();
+        var validEncodedPath = _fixture.GetValidMediaPath();
+        validVideo.UpdateMedia(validPath);
+
+        validVideo.UpdateAsEncoded(validEncodedPath);
+
+        validVideo.Media!.Status.Should().Be(MediaStatus.Completed);
+        validVideo.Media!.EncodedPath.Should().Be(validEncodedPath);
+    }
+
+    [Fact(DisplayName = nameof(UpdateAsEncodedThrowsWhenThereIsNoMedia))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void UpdateAsEncodedThrowsWhenThereIsNoMedia()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var validPath = _fixture.GetValidMediaPath();
+
+        var action = () => validVideo.UpdateAsEncoded(validPath);
+
+        action.Should().Throw<EntityValidationException>()
+            .WithMessage("There is no Media");
+    }
+
+    [Fact(DisplayName = nameof(UpdateTrailer))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void UpdateTrailer()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var validPath = _fixture.GetValidMediaPath();
+
+        validVideo.UpdateTrailer(validPath);
+
+        validVideo.Trailer.Should().NotBeNull();
+        validVideo.Trailer!.FilePath.Should().Be(validPath);
+    }
+
+    [Fact(DisplayName = nameof(AddCategory))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void AddCategory()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var categoryIdExample = Guid.NewGuid();
+
+        validVideo.AddCategory(categoryIdExample);
+
+        validVideo.Categories.Should().HaveCount(1);
+        validVideo.Categories[0].Should().Be(categoryIdExample);
+    }
+
+    [Fact(DisplayName = nameof(RemoveCategory))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void RemoveCategory()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var categoryIdExample = Guid.NewGuid();
+        var categoryIdExample2 = Guid.NewGuid();
+        validVideo.AddCategory(categoryIdExample);
+        validVideo.AddCategory(categoryIdExample2);
+
+        validVideo.RemoveCategory(categoryIdExample);
+
+        validVideo.Categories.Should().HaveCount(1);
+        validVideo.Categories[0].Should().Be(categoryIdExample2);
+    }
+
+    [Fact(DisplayName = nameof(RemoveAllCategory))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void RemoveAllCategory()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var categoryIdExample = Guid.NewGuid();
+        var categoryIdExample2 = Guid.NewGuid();
+        validVideo.AddCategory(categoryIdExample);
+        validVideo.AddCategory(categoryIdExample2);
+
+        validVideo.RemoveAllCategories();
+
+        validVideo.Categories.Should().HaveCount(0);
+    }
+
+    [Fact(DisplayName = nameof(AddGenre))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void AddGenre()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var exampleId = Guid.NewGuid();
+
+        validVideo.AddGenre(exampleId);
+
+        validVideo.Genres.Should().HaveCount(1);
+        validVideo.Genres[0].Should().Be(exampleId);
+    }
+
+    [Fact(DisplayName = nameof(RemoveGenre))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void RemoveGenre()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var exampleId = Guid.NewGuid();
+        var exampleId2 = Guid.NewGuid();
+        validVideo.AddGenre(exampleId);
+        validVideo.AddGenre(exampleId2);
+
+        validVideo.RemoveGenre(exampleId2);
+
+        validVideo.Genres.Should().HaveCount(1);
+        validVideo.Genres[0].Should().Be(exampleId);
+    }
+
+    [Fact(DisplayName = nameof(RemoveAllGenre))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void RemoveAllGenre()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var exampleId = Guid.NewGuid();
+        var exampleId2 = Guid.NewGuid();
+        validVideo.AddGenre(exampleId);
+        validVideo.AddGenre(exampleId2);
+
+        validVideo.RemoveAllGenres();
+
+        validVideo.Genres.Should().HaveCount(0);
+    }
+
+    [Fact(DisplayName = nameof(AddCastMember))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void AddCastMember()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var exampleId = Guid.NewGuid();
+
+        validVideo.AddCastMember(exampleId);
+
+        validVideo.CastMembers.Should().HaveCount(1);
+        validVideo.CastMembers[0].Should().Be(exampleId);
+    }
+
+    [Fact(DisplayName = nameof(RemoveCastMember))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void RemoveCastMember()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var exampleId = Guid.NewGuid();
+        var exampleId2 = Guid.NewGuid();
+        validVideo.AddCastMember(exampleId);
+        validVideo.AddCastMember(exampleId2);
+
+        validVideo.RemoveCastMember(exampleId2);
+
+        validVideo.CastMembers.Should().HaveCount(1);
+        validVideo.CastMembers[0].Should().Be(exampleId);
+    }
+
+    [Fact(DisplayName = nameof(RemoveAllCastMembers))]
+    [Trait("Domain", "Video - Aggregate")]
+    public void RemoveAllCastMembers()
+    {
+        var validVideo = _fixture.GetValidVideo();
+        var exampleId = Guid.NewGuid();
+        var exampleId2 = Guid.NewGuid();
+        validVideo.AddCastMember(exampleId);
+        validVideo.AddCastMember(exampleId2);
+
+        validVideo.RemoveAllCastMembers();
+
+        validVideo.CastMembers.Should().HaveCount(0);
     }
 }

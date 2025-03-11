@@ -31,16 +31,16 @@ public class VideoTestFixtureBase : BaseFixture
         video.UpdateThumb(GetValidImagePath());
         video.UpdateThumbHalf(GetValidImagePath());
 
-        //video.UpdateMedia(GetValidMediaPath());
-        //video.UpdateTrailer(GetValidMediaPath());
+        video.UpdateMedia(GetValidMediaPath());
+        video.UpdateTrailer(GetValidMediaPath());
 
-        //var random = new Random();
-        //Enumerable.Range(1, random.Next(2, 5)).ToList()
-        //    .ForEach(_ => video.AddCastMember(Guid.NewGuid()));
-        //Enumerable.Range(1, random.Next(2, 5)).ToList()
-        //    .ForEach(_ => video.AddCategory(Guid.NewGuid()));
-        //Enumerable.Range(1, random.Next(2, 5)).ToList()
-        //    .ForEach(_ => video.AddGenre(Guid.NewGuid()));
+        var random = new Random();
+        Enumerable.Range(1, random.Next(2, 5)).ToList()
+            .ForEach(_ => video.AddCastMember(Guid.NewGuid()));
+        Enumerable.Range(1, random.Next(2, 5)).ToList()
+            .ForEach(_ => video.AddCategory(Guid.NewGuid()));
+        Enumerable.Range(1, random.Next(2, 5)).ToList()
+            .ForEach(_ => video.AddGenre(Guid.NewGuid()));
 
         return video;
     }
