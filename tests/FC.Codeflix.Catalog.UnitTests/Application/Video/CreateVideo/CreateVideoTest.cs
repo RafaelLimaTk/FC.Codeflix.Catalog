@@ -1,4 +1,5 @@
-﻿using FC.Codeflix.Catalog.Application.Interfaces;
+﻿using FC.Codeflix.Catalog.Application.Exceptions;
+using FC.Codeflix.Catalog.Application.Interfaces;
 using FC.Codeflix.Catalog.Application.UseCases.Video.CreateVideo;
 using FC.Codeflix.Catalog.Domain.Exceptions;
 using FC.Codeflix.Catalog.Domain.Extensions;
@@ -111,6 +112,36 @@ public class CreateVideoTest
             ),
             It.IsAny<CancellationToken>())
         );
+        categoryRepositoryMock.VerifyAll();
+    }
+
+    [Fact(DisplayName = nameof(ThrowsWhenCategoryIdInvalid))]
+    [Trait("Application", "CreateVideo - Use Cases")]
+    public async Task ThrowsWhenCategoryIdInvalid()
+    {
+        var videoRepositoryMock = new Mock<IVideoRepository>();
+        var categoryRepositoryMock = new Mock<ICategoryRepository>();
+        var examplecategoriesIds = Enumerable.Range(1, 5)
+            .Select(_ => Guid.NewGuid()).ToList();
+        var removedcategoryId = examplecategoriesIds[2];
+        var unitOfWorkMock = new Mock<IUnitOfWork>();
+        categoryRepositoryMock.Setup(x => x.GetIdsListByIds(
+            It.IsAny<List<Guid>>(),
+            It.IsAny<CancellationToken>())
+        ).ReturnsAsync(examplecategoriesIds.FindAll(x => x != removedcategoryId).ToList().AsReadOnly());
+        var useCase = new UseCase.CreateVideo(
+            videoRepositoryMock.Object,
+            categoryRepositoryMock.Object,
+            Mock.Of<IGenreRepository>(),
+            Mock.Of<ICastMemberRepository>(),
+            unitOfWorkMock.Object
+        );
+        var input = _fixture.CreateValidInput(examplecategoriesIds);
+
+        var action = () => useCase.Handle(input, CancellationToken.None);
+
+        await action.Should().ThrowAsync<RelatedAggregateException>()
+            .WithMessage($"Related category id (or ids) not found: {removedcategoryId}.");
         categoryRepositoryMock.VerifyAll();
     }
 
