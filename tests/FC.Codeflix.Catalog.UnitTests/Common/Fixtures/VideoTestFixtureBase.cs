@@ -1,7 +1,7 @@
 ﻿using FC.Codeflix.Catalog.Domain.Enums;
 using DomainEntity = FC.Codeflix.Catalog.Domain.Entities;
 
-namespace FC.Codeflix.Catalog.UnitTests.Common;
+namespace FC.Codeflix.Catalog.UnitTests.Common.Fixtures;
 
 public class VideoTestFixtureBase : BaseFixture
 {
@@ -68,7 +68,7 @@ public class VideoTestFixtureBase : BaseFixture
         ).Year;
 
     public int GetValidDuration()
-        => (new Random()).Next(100, 300);
+        => new Random().Next(100, 300);
 
     public string GetTooLongTitle()
         => Faker.Lorem.Letter(400);

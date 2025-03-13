@@ -1,4 +1,4 @@
-﻿using FC.Codeflix.Catalog.UnitTests.Common;
+﻿using FC.Codeflix.Catalog.UnitTests.Common.Fixtures;
 
 namespace FC.Codeflix.Catalog.UnitTests.Domain.Entities.Video;
 
