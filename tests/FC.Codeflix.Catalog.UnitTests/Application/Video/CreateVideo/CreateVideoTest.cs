@@ -313,4 +313,33 @@ public class CreateVideoTest
         );
         castMemberRepositoryMock.VerifyAll();
     }
+
+    [Fact(DisplayName = nameof(ThrowsWhenInvalidCastMemberId))]
+    [Trait("Application", "CreateVideo - Use Cases")]
+    public async Task ThrowsWhenInvalidCastMemberId()
+    {
+        var exampleIds = Enumerable.Range(1, 5)
+            .Select(_ => Guid.NewGuid()).ToList();
+        var removedId = exampleIds[2];
+        var videoRepositoryMock = new Mock<IVideoRepository>();
+        var castMemberRepositoryMock = new Mock<ICastMemberRepository>();
+        var unitOfWorkMock = new Mock<IUnitOfWork>();
+        castMemberRepositoryMock.Setup(x => x.GetIdsListByIds(
+            It.IsAny<List<Guid>>(), It.IsAny<CancellationToken>())
+        ).ReturnsAsync(exampleIds.FindAll(x => x != removedId));
+        var useCase = new UseCase.CreateVideo(
+            videoRepositoryMock.Object,
+            Mock.Of<ICategoryRepository>(),
+            Mock.Of<IGenreRepository>(),
+            castMemberRepositoryMock.Object,
+            unitOfWorkMock.Object
+        );
+        var input = _fixture.CreateValidInput(castMembersIds: exampleIds);
+
+        var action = () => useCase.Handle(input, CancellationToken.None);
+
+        await action.Should().ThrowAsync<RelatedAggregateException>()
+            .WithMessage($"Related cast member id (or ids) not found: {removedId}.");
+        castMemberRepositoryMock.VerifyAll();
+    }
 }
