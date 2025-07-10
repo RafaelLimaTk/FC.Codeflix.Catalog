@@ -37,4 +37,38 @@ public class CreateVideoTestFixture : VideoTestFixtureBase
         media,
         trailer
     );
+
+    internal CreateVideoRequest CreateValidInputWithAllImages() => new(
+        GetValidTitle(),
+        GetValidDescription(),
+        GetValidYearLaunched(),
+        GetRandomBoolean(),
+        GetRandomBoolean(),
+        GetValidDuration(),
+        GetRandomRating(),
+        null,
+        null,
+        null,
+        GetValidImageFileInput(),
+        GetValidImageFileInput(),
+        GetValidImageFileInput()
+    );
+
+    internal CreateVideoRequest CreateValidInputWithAllMedias() => new(
+        GetValidTitle(),
+        GetValidDescription(),
+        GetValidYearLaunched(),
+        GetRandomBoolean(),
+        GetRandomBoolean(),
+        GetValidDuration(),
+        GetRandomRating(),
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        GetValidMediaFileInput(),
+        GetValidMediaFileInput()
+    );
 }

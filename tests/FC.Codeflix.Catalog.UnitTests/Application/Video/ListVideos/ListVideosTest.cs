@@ -177,4 +177,85 @@ public class ListVideosTest
         _categoryRepository.VerifyAll();
         _genreRepository.VerifyAll();
     }
+
+    [Fact(DisplayName = nameof(ListVideosWithoutRelationsDoesntCallOtherRepositories))]
+    [Trait("Application", "ListVideos - Use Cases")]
+    public async Task ListVideosWithoutRelationsDoesntCallOtherRepositories()
+    {
+        var exampleVideos = _fixture.CreateExampleVideosListWithoutRelations();
+        var input = new UseCase.ListVideosRequest(1, 10, "", "", SearchOrder.Asc);
+        _videoRepositoryMock.Setup(x =>
+            x.Search(
+                It.Is<SearchRequest>(x =>
+                    x.Page == input.Page &&
+                    x.PerPage == input.PerPage &&
+                    x.Search == input.Search &&
+                    x.OrderBy == input.Sort &&
+                    x.Order == input.Dir),
+                It.IsAny<CancellationToken>()
+            )
+        ).ReturnsAsync(
+            new SearchResponse<DomainEntities.Video>(
+                input.Page,
+                input.PerPage,
+                exampleVideos.Count,
+                exampleVideos));
+
+        PaginatedListResponse<VideoModelResponse> output =
+            await _useCase.Handle(input, CancellationToken.None);
+
+        output.Page.Should().Be(input.Page);
+        output.PerPage.Should().Be(input.PerPage);
+        output.Total.Should().Be(exampleVideos.Count);
+        output.Items.Should().HaveCount(exampleVideos.Count);
+        output.Items.ToList().ForEach(outputItem =>
+        {
+            var exampleVideo = exampleVideos.Find(x => x.Id == outputItem.Id);
+            exampleVideo.Should().NotBeNull();
+            output.Should().NotBeNull();
+            outputItem.Categories.Should().HaveCount(0);
+            outputItem.Genres.Should().HaveCount(0);
+            outputItem.CastMembers.Should().HaveCount(0);
+        });
+        _videoRepositoryMock.VerifyAll();
+        _categoryRepository.Verify(x =>
+            x.GetListByIds(It.IsAny<List<Guid>>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        _genreRepository.Verify(x =>
+            x.GetListByIds(It.IsAny<List<Guid>>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    [Fact(DisplayName = nameof(ListReturnsEmptyWhenThereIsNoVideo))]
+    [Trait("Application", "ListVideos - Use Cases")]
+    public async Task ListReturnsEmptyWhenThereIsNoVideo()
+    {
+        var input = new UseCase.ListVideosRequest(1, 10, "", "", SearchOrder.Asc);
+        _videoRepositoryMock.Setup(x =>
+            x.Search(
+                It.Is<SearchRequest>(x =>
+                    x.Page == input.Page &&
+                    x.PerPage == input.PerPage &&
+                    x.Search == input.Search &&
+                    x.OrderBy == input.Sort &&
+                    x.Order == input.Dir),
+                It.IsAny<CancellationToken>()
+            )
+        ).ReturnsAsync(
+            new SearchResponse<DomainEntities.Video>(
+                input.Page,
+                input.PerPage,
+                0,
+                new List<DomainEntities.Video>()));
+
+        PaginatedListResponse<VideoModelResponse> output = await _useCase.Handle(input, CancellationToken.None);
+
+        output.Page.Should().Be(input.Page);
+        output.PerPage.Should().Be(input.PerPage);
+        output.Total.Should().Be(0);
+        output.Items.Should().HaveCount(0);
+        _videoRepositoryMock.VerifyAll();
+    }
 }
